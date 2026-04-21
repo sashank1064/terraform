@@ -1,6 +1,6 @@
 # terraform
 
-Terraform configurations for provisioning AWS infrastructure: VPC, EC2, ALB, IAM, Route 53, and security groups, written as composable modules.
+A patterns workspace for Terraform. Each top-level folder is a small, runnable example of one concept: variables, locals, loops, conditions, data sources, dynamic blocks, provisioners, imports, remote state, multi-account.
 
 ![Terraform](https://img.shields.io/badge/Terraform-7B42BC?logo=terraform&logoColor=white)
 ![HCL](https://img.shields.io/badge/HCL-844FBA?logo=terraform&logoColor=white)
@@ -8,75 +8,60 @@ Terraform configurations for provisioning AWS infrastructure: VPC, EC2, ALB, IAM
 
 ## Overview
 
-Single-environment Terraform code for the AWS infrastructure that underpins the RoboShop deployment. It provisions networking, compute, load balancing, DNS, and IAM. The Ansible layer then configures the services that run on top.
+A reference repo for Terraform language and workflow patterns. Each folder is self-contained: its own `provider.tf`, its own `.tf` files, its own purpose. No folder depends on another, so you can pick any topic and run it in isolation.
 
-For the multi-environment version (dev, stage, prod with remote state and workspaces), see [`terraform-multi-env`](https://github.com/sashank1064/terraform-multi-env).
+For the real RoboShop infrastructure that composes these patterns into a working platform, see:
 
-## What gets created
+- [`terraform-aws-vpc`](https://github.com/sashank1064/terraform-aws-vpc), [`terraform-aws-securitygroup`](https://github.com/sashank1064/terraform-aws-securitygroup), [`terraform-aws-instance`](https://github.com/sashank1064/terraform-aws-instance): published reusable modules
+- [`terraform-aws-roboshop`](https://github.com/sashank1064/terraform-aws-roboshop): component-level infra that consumes those modules
+- [`roboshop-infra-dev`](https://github.com/sashank1064/roboshop-infra-dev): layered deployment from VPC to CDN
 
-| Component | AWS resources |
+## Topics covered
+
+| Folder | What it shows |
 |---|---|
-| Network | `aws_vpc`, `aws_subnet` (public + private), `aws_internet_gateway`, `aws_nat_gateway`, route tables |
-| Compute | `aws_instance` per microservice, tagged for dynamic inventory |
-| Load balancing | `aws_lb`, `aws_lb_target_group`, `aws_lb_listener` (HTTPS on 443 with ACM cert) |
-| DNS | `aws_route53_record` per service, private hosted zone |
-| Security | `aws_security_group` with least-privilege per-service ingress |
-| IAM | Instance profile with SSM and CloudWatch permissions |
-| Observability | CloudWatch log groups, metric filters |
+| `variables/` | Variable declarations, defaults, validation blocks |
+| `locals/` | Computed values, naming helpers, common tags |
+| `conditions/` | `count` and `for_each` gating with booleans |
+| `loops/` | `count`, `for_each`, and `for` expressions |
+| `for-loop/` | `for` expressions across lists and maps |
+| `dynamic-block/` | `dynamic` blocks for repeated nested configs |
+| `functions/` | String, collection, numeric, and type functions |
+| `data-sources/` | Reading existing AWS resources into Terraform |
+| `provisioners/` | `remote-exec`, `local-exec`, and when to avoid them |
+| `import/` | `terraform import` and `import` blocks for adopting real resources |
+| `state/` | Local state inspection with `terraform state` subcommands |
+| `secure-state/` | Remote backend, encryption, locking with DynamoDB |
+| `multi-account/` | Provider aliases for cross-account deployments |
+| `ec2/` | Minimal EC2 + SG example used as a sandbox |
 
-## Repo layout
-
-```
-.
-├── provider.tf            # AWS provider and required versions
-├── backend.tf             # S3 remote state and DynamoDB locking
-├── variables.tf           # input vars (region, instance size, tags)
-├── locals.tf              # computed defaults, naming helpers
-├── main.tf                # module composition
-├── outputs.tf             # ALB DNS, VPC id, private IPs
-├── modules/
-│   ├── vpc/
-│   ├── ec2/
-│   ├── alb/
-│   ├── route53/
-│   ├── sg/
-│   └── iam/
-└── terraform.tfvars       # gitignored, env-specific values
-```
-
-## Usage
+## Quick start
 
 ```bash
-# Format and validate before anything else
-terraform fmt -recursive
-terraform validate
+# Pick a topic folder
+cd ec2
 
-# Initialize backend and providers
+# Standard flow
 terraform init
-
-# See the plan, read it, do not just apply
-terraform plan -out=tfplan
-
-# Apply the reviewed plan
-terraform apply tfplan
-
-# When tearing down a dev environment
+terraform plan
+terraform apply
 terraform destroy
 ```
 
+Every folder follows the same flow. No surprises.
+
 ## Conventions
 
-- **One module per logical concern.** `vpc/`, `ec2/`, `alb/`, never a "stuff" module.
-- **No hard-coded values.** Every configurable thing is a variable with a sensible default in `variables.tf`.
-- **Tags via a single `locals.common_tags`.** Merged into every resource for cost attribution and cleanup.
-- **Remote state and locking.** S3 backend with DynamoDB table so two engineers can't `apply` simultaneously.
-- **Provider versions pinned.** `required_providers { aws = "~> 5.0" }`. Upgrades are deliberate.
-- **`terraform fmt` and `tflint` in CI.** Drift in formatting is drift in code review attention.
-- **Outputs are downstream inputs.** ALB DNS, VPC id, and SG ids are outputs so Ansible inventory can consume them.
+- **`provider.tf` per folder.** Each example runs on its own.
+- **`.terraform.lock.hcl` committed.** Provider versions are reproducible.
+- **No hard-coded credentials.** AWS access comes from the environment (`aws configure` or an assumed role).
+- **Destroy-friendly.** Examples are built to be spun up, inspected, and torn down cheaply.
 
-## Prerequisites
+## Related repos
 
-- AWS account and an IAM user or role with the permissions in `iam/policy.json`
-- Terraform >= 1.6
-- AWS CLI v2 configured (`aws configure`)
-- S3 bucket and DynamoDB table for remote state (see `backend.tf`)
+1. [`terraform-aws-vpc`](https://github.com/sashank1064/terraform-aws-vpc)
+2. [`terraform-aws-securitygroup`](https://github.com/sashank1064/terraform-aws-securitygroup)
+3. [`terraform-aws-instance`](https://github.com/sashank1064/terraform-aws-instance)
+4. [`terraform-aws-roboshop`](https://github.com/sashank1064/terraform-aws-roboshop)
+5. [`roboshop-infra-dev`](https://github.com/sashank1064/roboshop-infra-dev)
+6. [`terraform-multi-env`](https://github.com/sashank1064/terraform-multi-env)
