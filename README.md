@@ -1,6 +1,6 @@
-# terraform
+# Terraform Patterns Reference
 
-A patterns workspace for Terraform. Each top-level folder is a small, runnable example of one concept: variables, locals, loops, conditions, data sources, dynamic blocks, provisioners, imports, remote state, multi-account.
+A focused workspace of runnable Terraform examples — one concept per folder: variables, locals, loops, conditions, data sources, dynamic blocks, provisioners, imports, remote state, multi-account.
 
 ![Terraform](https://img.shields.io/badge/Terraform-7B42BC?logo=terraform&logoColor=white)
 ![HCL](https://img.shields.io/badge/HCL-844FBA?logo=terraform&logoColor=white)
@@ -57,11 +57,3 @@ Every folder follows the same flow. No surprises.
 - **No hard-coded credentials.** AWS access comes from the environment (`aws configure` or an assumed role).
 - **Destroy-friendly.** Examples are built to be spun up, inspected, and torn down cheaply.
 
-## Related repos
-
-1. [`terraform-aws-vpc`](https://github.com/sashank1064/terraform-aws-vpc)
-2. [`terraform-aws-securitygroup`](https://github.com/sashank1064/terraform-aws-securitygroup)
-3. [`terraform-aws-instance`](https://github.com/sashank1064/terraform-aws-instance)
-4. [`terraform-aws-roboshop`](https://github.com/sashank1064/terraform-aws-roboshop)
-5. [`roboshop-infra-dev`](https://github.com/sashank1064/roboshop-infra-dev)
-6. [`terraform-multi-env`](https://github.com/sashank1064/terraform-multi-env)
